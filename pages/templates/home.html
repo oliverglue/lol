@@ -1,0 +1,35 @@
+<style>
+.button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.red {
+  background-color: #f44336;
+  
+}
+</style>
+
+<h2> {{abc}} </h2>
+<div>
+	<h1>  MOVIE {{var}} </h1>
+	<form action='/{{abc}}/LikeMovie/' method='GET' >
+	<button class=button type='submit' name={{var}} value=1></button>
+</form>
+<form action='/{{abc}}/LikeMovie/' method='GET'>
+	<button class="button red" type='submit' name={{var}} value="-1"></button>
+</form>
+</div>
+
+<br>
+<div>
+<img src="/static/{{var}}.jpg">
+</div>
