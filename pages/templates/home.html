@@ -1,3 +1,5 @@
+{% load static %}
+
 <style>
 .button {
   background-color: #4CAF50;
@@ -31,5 +33,5 @@
 
 <br>
 <div>
-<img src="/static/{{var}}.jpg">
+	<img src="{% static var %}.jpg">
 </div>
