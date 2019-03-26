@@ -17,16 +17,16 @@
 
 Create a Room, where friends can join...
 <br>
-<form action="/room/"  method=GET>
-<button class="button" name="r" value=123 type="submit">Create Room</button>
+<form action="/room/"  method=POST>{% csrf_token %} 
+<button class="button" name="create" type="submit">Create Room</button>
 </form> 
 <br>
 <br>
-<form action="/room/" method=GET> 
+<form action="/room/" method=POST>{% csrf_token %} 
   Or Join your friends... 
   <br>
   <br>
-  <input type="text" name="r" value="XXX">
+  <input type="text" name="join" value="XXX">
   <br>
   <button class="button" type="submit" >Join</button>
 </form> 

@@ -1,50 +1,215 @@
 <style>
-.button {
-  background-color: MediumSeaGreen;
-  border: none;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-}
-.yellow { 
-  background-color: Orange; 
-} 
-.red {
-  background-color: #f44336;  
-}
+    body {
+        font-size: 13px;
+    }
 
+    .button {
+        background-color: MediumSeaGreen;
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 13px;
+        margin: 4px 2px;
+        cursor: pointer;
+        width: 100%;
+    }
 
+    .yellow {
+        background-color: Orange;
+    }
+
+    .red {
+        background-color: #f44336;
+    }
+
+    #cover_url,
+    #imdb {
+        width: 100%;
+    }
+
+    #rating {
+        color: #f3ce00;
+    }
+
+    .noPadding {
+
+        padding-left: 0 !important;
+    }
+
+    .silver {
+        color: silver;
+    }
+
+    .titleBackground {
+        background-color: #29a8ab;
+    }
+
+    .cover_urlBackground {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        background-color: #eeeeee;
+    }
+
+    .plotBackground {
+        height: 150px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+        background-color: #29a8ab;
+    }
+
+    .offset-md-3>.navbar {
+        padding: 0 0 0 0;
+    }
 
 </style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 
+
+
+
+<body>
+
+    <div class="container">
+
+
+        <div class="row">
+            <div class="col-md-6 offset-md-3">
+                <nav class="navbar navbar-light bg-light">
+                    <a class="navbar-brand" href="#">
+                
+            <img src="https://image.flaticon.com/icons/png/512/31/31087.png" width="30" height="30" class="d-inline-block align-top" alt="">
+                         MOVIETINDER</a>
+                    <span> {{room_id}}</span> {{user_id}}
+                    <a href="/">Leave Room</a>
+                    <button id="stats">Stats</button>
+                </nav>
+
+                <div class="row titleBackground">
+                    <div class="col-sm">
+                        <h5 id="title"> The Dark Knight<span id="year" class="silver"></span></h5>
+                    </div>
+                </div>
+
+
+                <div class="row cover_urlBackground">
+                    <div class="col-sm-5">
+                        <img id="cover_url" src="https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SY1000.jpg?fbclid=IwAR37Lhw4SXqstLe-iYVLRkqwg8f6wPZj81zk7oSiy8EjHQj1bCWC2QQhfoc">
+                    </div>
+                    <div class="col-sm-7">
+                        <div class="row">
+                            <div class="col-sm-2 imdbLogo">
+
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/IMDb_logo.svg/1280px-IMDb_logo.svg.png" id="imdb">
+
+
+                            </div>
+                            <div class="col-sm-1 noPadding" id="rating">
+                            </div>
+                            <div class="col-sm-9 noPadding">
+                                <p id="genres"> Action, Crime, Drama
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm" id="plot"></div>
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row ">
+                    <div class="col-sm plotBackground" id="cast">
+
+                        <p>Actors: Christian Bale, Heath Ledger, Aaron Eckhart</p>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <div class="col-sm">
+                        <button value="0" class="button choiceButton red">Don't Watch</button>
+                    </div>
+                    <div class="col-sm">
+                        <button value="2" class="button choiceButton">Like</button>
+
+                    </div>
+                    <div class="col-sm">
+
+                        <button value="1" class="button choiceButton yellow">Watch</button>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</body>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
 <script>
-$(document).ready(function(){
-  $("button").click(function(){
-    $.get({url: "/session/new_movie", 
-      data: {like: $(this).val()},
-     success: function(i){
-      $("#div1").html(i);
-    }});
-  });
- });
+    var foo;
+    $(document).ready(function() {
+        $(".choiceButton").click(function() {
+            $.get({
+                url: "/session/new_movie",
+                data: {
+                    like: $(this).val()
+                },
+                success: function(i) {
+                    foo = i;
+                    console.log(foo)
+                    buildPage();
+                }
+            });
+        });
+
+        $("#leaveRoom").click(function() {
+            $.get({
+                url: "/",
+                data: {
+                    like: $(this).val()
+                },
+                success: function(i) {
+                    body.html(i);
+                }
+            });
+        });
+
+        $("#stats").click(function() {
+            $.get({
+                url: "/session/stats",
+                data: {
+                    like: $(this).val()
+                },
+                success: function(i) {
+                    console.log(i);
+                }
+            });
+        });
+
+
+
+    });
+    //,title,year,genres,plot,cover_url,rating
+    // Cast + Pictures
+    function buildPage() {
+        $("#title").html(foo.title + ' <span id="year" class="silver"></span>'); // year aswell
+        $("#year").html("(" + foo.year + ")");
+        //mystring = foo.genres.split("'").join('')
+        $("#genres").html(foo.genres);
+        $("#plot").html(foo.plot);
+        $("#cover_url").attr("src", foo.cover_url);
+        $("#rating").html(foo.rating);
+        $("#cast").html(foo.cast);
+    }
+
 </script>
-
-
-{{user}}
-<a href="/">Leave Room</a>
-<br>
-<button value="2" class="button">Like</button>
-<button value="1" class="button yellow">Watch</button>
-<button value="-1" class="button red">Don't Watch</button>
-
-<div id="div1"></div>
-
-

@@ -94,7 +94,7 @@ class backend():
         self.liked_sim = self.similarity_matrix.loc[self.liked_movies].mean().drop(self.seen_movies)
         self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].mean().drop(self.seen_movies)
         
-        self.sim = self.liked_sim - self.disliked_sim
+        self.sim = self.liked_sim - 0.3*self.disliked_sim
         return self.sim.sort_values(ascending=False).index.values
 
 
@@ -105,16 +105,50 @@ def new_movie(request):
     user_id = request.META['CSRF_COOKIE']
     i = back.new_movie(user_id)[0]
     back.add_movie(user_id, i, like)
-    return render(request, "ajax.html", back.all_movies.loc[i].to_dict())
+    json = back.all_movies.loc[i].to_dict()
+    for i in json.keys():
+        print(i, json[i])
+    del json["Unnamed: 0"]
+    del json["const"]
+    json["year"] = str(json["year"])
+    json["title"] = json["title1"]
+    json["genres"] = str(", ".join(eval(json["genres"])[:3]))
+    json["cast"] = str(", ".join(json["cast"][:4]))
+    return JsonResponse(json)
+    #return render(request, "ajax.html", back.all_movies.loc[i].to_dict())
 
 def create_room(request):
     user_id = request.META['CSRF_COOKIE']
-    room_id = request.GET["r"]
+    #room_id = request.GET["r"]
+    print(request.POST.keys())
+    if  "create" in request.POST.keys():
+        room_id = str(np.random.randint(100))  
+        back.create_room(user_id, room_id)
+
+    elif  "join" in request.POST.keys():
+        room_id = request.POST["join"]
+        print(type(room_id))
+        print(room_id)
+        if room_id in back.rooms.keys():
+            back.join_room(user_id, room_id)
+        else:
+            return JsonResponse({"room_exists":False})#render(request, "home.html")
+
+    """
+    room_id = request.POST[""]
     if room_id in back.rooms.keys():
         back.join_room(user_id, room_id) 
-    else:
+
+    elif request.POST.keys()[1] == "create":   #request.POST.keys()[1] = create, if create button
+        room_id = np.random.randint(100)     #request.POST.keys()[1] = join, if join button
         back.create_room(user_id, room_id)
-    return render(request, "session.html")
+
+    else:
+        return render(request, "home.html")
+    """
+
+     
+    return render(request, "session.html", {"room_id": room_id, "user_id":user_id[:]})
 
 ### Static pages ###
 def home(request):
