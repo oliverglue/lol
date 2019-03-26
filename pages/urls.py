@@ -1,12 +1,11 @@
 from django.urls import path
-from .views import homePageView, homePageView_user1, homePageView_user2, homePageView_user3
-
+from .views import home, stats, sim, create_room, new_movie#join_room#session, new_movie, 
 urlpatterns = [
-        path("", homePageView, name="home"),
-        path("user1/", homePageView_user1),
-        path("user1/LikeMovie/", homePageView_user1), 
-        path("user2/", homePageView_user2),
-        path("user2/LikeMovie/", homePageView_user2),
-        path("user3/", homePageView_user3),
-        path("user3/LikeMovie/", homePageView_user3),
+        path("", home, name="home"),
+        path("room/", create_room),
+        #path("session/", session),
+        path("session/new_movie", new_movie),
+        path("stats/", stats),
+        path("sim/", sim)
         ]
+        

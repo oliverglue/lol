@@ -1,0 +1,6 @@
+home 
+	create 	-> get request 		->  new URL with 3 random number = session
+	join 	-> get FORM request ->	join session URL, if exist else return to home 
+
+session
+	likes

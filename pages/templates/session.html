@@ -1,0 +1,50 @@
+<style>
+.button {
+  background-color: MediumSeaGreen;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+.yellow { 
+  background-color: Orange; 
+} 
+.red {
+  background-color: #f44336;  
+}
+
+
+
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+<script>
+$(document).ready(function(){
+  $("button").click(function(){
+    $.get({url: "/session/new_movie", 
+      data: {like: $(this).val()},
+     success: function(i){
+      $("#div1").html(i);
+    }});
+  });
+ });
+</script>
+
+
+{{user}}
+<a href="/">Leave Room</a>
+<br>
+<button value="2" class="button">Like</button>
+<button value="1" class="button yellow">Watch</button>
+<button value="-1" class="button red">Don't Watch</button>
+
+<div id="div1"></div>
+
+

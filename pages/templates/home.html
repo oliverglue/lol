@@ -1,8 +1,6 @@
-{% load static %}
-
 <style>
 .button {
-  background-color: #4CAF50;
+  background-color: DeepSkyBlue;
   border: none;
   color: white;
   padding: 15px 32px;
@@ -13,25 +11,27 @@
   margin: 4px 2px;
   cursor: pointer;
 }
-
-.red {
-  background-color: #f44336;
-  
-}
 </style>
 
-<h2> {{abc}} </h2>
-<div>
-	<h1>  MOVIE {{var}} </h1>
-	<form action='/{{abc}}/LikeMovie/' method='GET' >
-	<button class=button type='submit' name={{var}} value=1></button>
-</form>
-<form action='/{{abc}}/LikeMovie/' method='GET'>
-	<button class="button red" type='submit' name={{var}} value="-1"></button>
-</form>
-</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
+Create a Room, where friends can join...
 <br>
-<div>
-	<img src="{% static var %}.jpg">
-</div>
+<form action="/room/"  method=GET>
+<button class="button" name="r" value=123 type="submit">Create Room</button>
+</form> 
+<br>
+<br>
+<form action="/room/" method=GET> 
+  Or Join your friends... 
+  <br>
+  <br>
+  <input type="text" name="r" value="XXX">
+  <br>
+  <button class="button" type="submit" >Join</button>
+</form> 
+and find the perfect match
+
+{{table}}
+<br>
+<h3><a href="/stats/">Stats</a></h3>
