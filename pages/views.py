@@ -92,10 +92,10 @@ class backend():
         self.seen_movies = movies.index.values
         
         self.liked_sim = self.similarity_matrix.loc[self.liked_movies].mean().drop(self.seen_movies)
-        self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].mean().drop(self.seen_movies)
+        #self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].mean().drop(self.seen_movies)
         
-        self.sim = self.liked_sim - 0.3*self.disliked_sim
-        return self.sim.sort_values(ascending=False).index.values
+        #self.sim = self.liked_sim - 0.3*self.disliked_sim
+        return self.liked_sim.index.values[0]#self.sim.sort_values(ascending=False).index.values
 
 
 
@@ -103,7 +103,7 @@ back = backend()
 def new_movie(request):
     like = int(request.GET["like"])
     user_id = request.META['CSRF_COOKIE']
-    i = back.new_movie(user_id)[0]
+    i = back.new_movie(user_id)
     back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
     del json["Unnamed: 0"]
