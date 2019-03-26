@@ -4,6 +4,8 @@ from django.template.loader import render_to_string
 import numpy as np
 import pandas as pd
 import os 
+import time
+
 class backend():
     """
     Attributes:
@@ -92,18 +94,20 @@ class backend():
         self.seen_movies = movies.index.values
         
         self.liked_sim = self.similarity_matrix.loc[self.liked_movies].mean().drop(self.seen_movies)
-        #self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].mean().drop(self.seen_movies)
+        self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].mean().drop(self.seen_movies)
         
-        #self.sim = self.liked_sim - 0.3*self.disliked_sim
-        return self.liked_sim.index.values[0]#self.sim.sort_values(ascending=False).index.values
+        self.sim = self.liked_sim - 0.3*self.disliked_sim
+        return self.sim.sort_values(ascending=False).index.values
 
 
 
 back = backend()
 def new_movie(request):
+    t1 = time.time()
     like = int(request.GET["like"])
-    user_id = request.META['CSRF_COOKIE']
-    i = back.new_movie(user_id)
+    user_id = request.META['REMOTE_ADDR']
+
+    i = back.new_movie(user_id)[0]
     back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
     del json["Unnamed: 0"]
@@ -112,13 +116,13 @@ def new_movie(request):
     json["title"] = json["title1"]
     json["genres"] = str(", ".join(eval(json["genres"])[:3]))
     json["cast"] = str(", ".join(json["cast"][:4]))
+    print(time.time() - t1)
     return JsonResponse(json)
     #return render(request, "ajax.html", back.all_movies.loc[i].to_dict())
 
 def create_room(request):
-    user_id = request.META['CSRF_COOKIE']
+    user_id = request.META['REMOTE_ADDR']
     #room_id = request.GET["r"]
-    print(request.POST.keys())
     if  "create" in request.POST.keys():
         room_id = str(np.random.randint(100))  
         back.create_room(user_id, room_id)

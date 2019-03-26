@@ -1,6 +1,8 @@
 <style>
-    body {
+    #body {
         font-size: 13px;
+        background-color: #DCF3FF;
+        color: white;
     }
 
     .button {
@@ -39,29 +41,33 @@
         padding-left: 0 !important;
     }
 
-    .silver {
-        color: silver;
+    .titleStyle {
+        margin-top: 10px;
+        border-radius: 6px;
+        margin-bottom: 5px;
+        background-color: #07889B;
     }
 
-    .titleBackground {
-        background-color: #29a8ab;
-    }
-
-    .cover_urlBackground {
+    .cover_urlStyle {
+        border-radius: 6px;
+        margin-bottom: 5px;
         padding-top: 20px;
         padding-bottom: 20px;
-        background-color: #eeeeee;
+        background-color: #66B9BF;
     }
 
-    .plotBackground {
+    .castStyle {
+        border-radius: 6px;
+        margin-bottom: 5px;
         height: 150px;
         padding-top: 20px;
         padding-bottom: 20px;
-        background-color: #29a8ab;
+        background-color: #07889B;
     }
 
     .offset-md-3>.navbar {
         padding: 0 0 0 0;
+        color: B0C2CC;
     }
 
 </style>
@@ -72,31 +78,31 @@
 
 
 
-<body>
+<body id="body">
 
     <div class="container">
 
 
         <div class="row">
             <div class="col-md-6 offset-md-3">
-                <nav class="navbar navbar-light bg-light">
+                <nav class="navbar navbar-light">
                     <a class="navbar-brand" href="#">
                 
             <img src="https://image.flaticon.com/icons/png/512/31/31087.png" width="30" height="30" class="d-inline-block align-top" alt="">
                          MOVIETINDER</a>
                     <span> {{room_id}}</span> {{user_id}}
                     <a href="/">Leave Room</a>
-                    <button id="stats">Stats</button>
+                    <!--<button id="stats">Stats</button>-->
                 </nav>
 
-                <div class="row titleBackground">
+                <div class="row titleStyle">
                     <div class="col-sm">
                         <h5 id="title"> The Dark Knight<span id="year" class="silver"></span></h5>
                     </div>
                 </div>
 
 
-                <div class="row cover_urlBackground">
+                <div class="row cover_urlStyle">
                     <div class="col-sm-5">
                         <img id="cover_url" src="https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SY1000.jpg?fbclid=IwAR37Lhw4SXqstLe-iYVLRkqwg8f6wPZj81zk7oSiy8EjHQj1bCWC2QQhfoc">
                     </div>
@@ -124,10 +130,15 @@
                     </div>
                 </div>
 
-                <div class="row ">
-                    <div class="col-sm plotBackground" id="cast">
 
-                        <p>Actors: Christian Bale, Heath Ledger, Aaron Eckhart</p>
+                <div class="row ">
+                    <div class="col-sm plotBackground castStyle">
+                        <div class="row">
+                            <div class="col-sm">
+                                <h6>Cast:</h6><span  id="cast">Actors: Christian Bale, Heath Ledger, Aaron Eckhart</span>
+                            </div>
+                        </div>
+                        
                     </div>
 
                 </div>
