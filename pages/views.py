@@ -106,8 +106,6 @@ def new_movie(request):
     i = back.new_movie(user_id)[0]
     back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
-    for i in json.keys():
-        print(i, json[i])
     del json["Unnamed: 0"]
     del json["const"]
     json["year"] = str(json["year"])
