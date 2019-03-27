@@ -105,7 +105,7 @@ back = backend()
 def new_movie(request):
     t1 = time.time()
     like = int(request.GET["like"])
-    user_id = request.META['CSRF_COOKIE']
+    user_id = request.GET["user_id"]#request.META['CSRF_COOKIE']
     i = back.new_movie(user_id)[0]
     back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
