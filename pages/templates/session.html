@@ -172,9 +172,7 @@
     var foo;
     $(document).ready(function() {
         $(".choiceButton").click(function() {
-            $.ajax({
-                 async: false,
-                 type: 'GET',
+            $.get({
                 url: "/session/new_movie",
                 data: {
                     like: $(this).val(),
