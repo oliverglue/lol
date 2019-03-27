@@ -145,7 +145,7 @@
 
                 <div class="row">
                     <div class="col-sm">
-                        <button value="0" class="button choiceButton red">Don't Watch</button>
+                        <button value="-1" class="button choiceButton red">Don't Watch</button>
                     </div>
                     <div class="col-sm">
                         <button value="2" class="button choiceButton">Like</button>
@@ -169,14 +169,15 @@
 <script>
 
     var user_id = "{{user_id}}";
-    var foo;
+    var foo = {"const":468569};
     $(document).ready(function() {
         $(".choiceButton").click(function() {
             $.get({
                 url: "/session/new_movie",
                 data: {
                     like: $(this).val(),
-                    user_id: user_id
+                    user_id: user_id, 
+                    movie_id: foo.const,
                 },
                 success: function(i) {
                     foo = i;

@@ -55,8 +55,7 @@ class backend():
         self.all_movies = pd.read_csv("scrap_imdb_0_3000.csv")
         self.all_movies["plot"] = self.all_movies["plot"].apply(lambda x: eval(x)[0].split("::")[0])
         self.all_movies["cast"] = self.all_movies["cast"].apply(lambda x: eval(x)[:4])
-        self.all_movies["title1"] = self.all_movies["title"]
-        self.all_movies.set_index("title", inplace=True)
+        self.all_movies.set_index("const", inplace=True)
         self.similarity_matrix = pd.read_pickle("similarity_matrix")
         
     def create_room(self, user_id, room_id):
@@ -93,8 +92,8 @@ class backend():
         
         self.seen_movies = movies.index.values
         
-        self.liked_sim = self.similarity_matrix.loc[self.liked_movies].mean().drop(self.seen_movies)
-        self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].mean().drop(self.seen_movies)
+        self.liked_sim = self.similarity_matrix.loc[self.liked_movies].sum().drop(self.seen_movies)
+        self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].sum().drop(self.seen_movies)
         
         self.sim = self.liked_sim - 0.3*self.disliked_sim
         return self.sim.sort_values(ascending=False).index.values
@@ -104,51 +103,34 @@ class backend():
 back = backend()
 def new_movie(request):
     t1 = time.time()
+
+    liked_movie = int(request.GET["movie_id"])
+    print(liked_movie)
     like = int(request.GET["like"])
-    user_id = request.GET["user_id"]#request.META['CSRF_COOKIE']
+    user_id = request.GET["user_id"]
+    back.add_movie(user_id, liked_movie, like)
+
     i = back.new_movie(user_id)[0]
-    back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
     del json["Unnamed: 0"]
-    del json["const"]
+    json["const"] = str(back.all_movies.loc[i].name)
     json["year"] = str(json["year"])
-    json["title"] = json["title1"]
     json["genres"] = str(", ".join(eval(json["genres"])[:3]))
     json["cast"] = str(", ".join(json["cast"][:4]))
     print(time.time() - t1)
     return JsonResponse(json)
-    #return render(request, "ajax.html", back.all_movies.loc[i].to_dict())
 
 def create_room(request):
     user_id = str(request.META.get('CSRF_COOKIE'))
-    #room_id = request.GET["r"]
     if  "create" in request.POST.keys():
-        #user_id = "1"
         room_id = str(np.random.randint(100))
         back.create_room(user_id, room_id)
-
     elif "join" in request.POST.keys():
         room_id = request.POST["join"]
         if room_id in back.rooms.keys():
-            #user_id = str(len(back.rooms[room_id].columns) + 1)
             back.join_room(user_id, room_id)
         else:
             return JsonResponse({"room_exists":False})#render(request, "home.html")
-
-    """
-    room_id = request.POST[""]
-    if room_id in back.rooms.keys():
-        back.join_room(user_id, room_id) 
-
-    elif request.POST.keys()[1] == "create":   #request.POST.keys()[1] = create, if create button
-        room_id = np.random.randint(100)     #request.POST.keys()[1] = join, if join button
-        back.create_room(user_id, room_id)
-
-    else:
-        return render(request, "home.html")
-    """
-
-     
     return render(request, "session.html", {"room_id": room_id, "user_id":user_id})
 
 ### Static pages ###
