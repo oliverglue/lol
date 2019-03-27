@@ -105,8 +105,8 @@ back = backend()
 def new_movie(request):
     t1 = time.time()
     like = int(request.GET["like"])
-    user_id = request.META['REMOTE_ADDR']
-
+    print(request.GET["user_id"])
+    user_id = request.GET["user_id"]
     i = back.new_movie(user_id)[0]
     back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
@@ -121,17 +121,17 @@ def new_movie(request):
     #return render(request, "ajax.html", back.all_movies.loc[i].to_dict())
 
 def create_room(request):
-    user_id = request.META['REMOTE_ADDR']
+    user_id = str(request.META.get("HTTP_X_FORWARDED_FOR"))
     #room_id = request.GET["r"]
     if  "create" in request.POST.keys():
-        room_id = str(np.random.randint(100))  
+        #user_id = "1"
+        room_id = str(np.random.randint(100))
         back.create_room(user_id, room_id)
 
-    elif  "join" in request.POST.keys():
+    elif "join" in request.POST.keys():
         room_id = request.POST["join"]
-        print(type(room_id))
-        print(room_id)
         if room_id in back.rooms.keys():
+            #user_id = str(len(back.rooms[room_id].columns) + 1)
             back.join_room(user_id, room_id)
         else:
             return JsonResponse({"room_exists":False})#render(request, "home.html")
@@ -150,7 +150,7 @@ def create_room(request):
     """
 
      
-    return render(request, "session.html", {"room_id": room_id, "user_id":user_id[:]})
+    return render(request, "session.html", {"room_id": room_id, "user_id":user_id})
 
 ### Static pages ###
 def home(request):

@@ -1,8 +1,8 @@
 <style>
     #body {
         font-size: 13px;
-        background-color: #DCF3FF;
-        color: white;
+        background-color: white;
+        color: black;
     }
 
     .button {
@@ -45,7 +45,7 @@
         margin-top: 10px;
         border-radius: 6px;
         margin-bottom: 5px;
-        background-color: #07889B;
+        background-color: #EFEFEF;
     }
 
     .cover_urlStyle {
@@ -53,7 +53,7 @@
         margin-bottom: 5px;
         padding-top: 20px;
         padding-bottom: 20px;
-        background-color: #66B9BF;
+        background-color: #EFEFEF;
     }
 
     .castStyle {
@@ -62,12 +62,12 @@
         height: 150px;
         padding-top: 20px;
         padding-bottom: 20px;
-        background-color: #07889B;
+        background-color: #EFEFEF;
     }
 
     .offset-md-3>.navbar {
         padding: 0 0 0 0;
-        color: B0C2CC;
+        color: black;
     }
 
 </style>
@@ -167,17 +167,20 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
 <script>
+
+    var user_id = "{{user_id}}";
     var foo;
     $(document).ready(function() {
         $(".choiceButton").click(function() {
             $.get({
                 url: "/session/new_movie",
                 data: {
-                    like: $(this).val()
+                    like: $(this).val(),
+                    user_id: user_id
                 },
                 success: function(i) {
                     foo = i;
-                    console.log(foo)
+                    console.log(foo, user_id)
                     buildPage();
                 }
             });
