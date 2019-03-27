@@ -105,8 +105,7 @@ back = backend()
 def new_movie(request):
     t1 = time.time()
     like = int(request.GET["like"])
-    print(request.GET["user_id"])
-    user_id = request.GET["user_id"]
+    user_id = request.META['CSRF_COOKIE']
     i = back.new_movie(user_id)[0]
     back.add_movie(user_id, i, like)
     json = back.all_movies.loc[i].to_dict()
@@ -121,7 +120,7 @@ def new_movie(request):
     #return render(request, "ajax.html", back.all_movies.loc[i].to_dict())
 
 def create_room(request):
-    user_id = str(request.META.get("HTTP_X_FORWARDED_FOR"))
+    user_id = str(request.META.get('CSRF_COOKIE'))
     #room_id = request.GET["r"]
     if  "create" in request.POST.keys():
         #user_id = "1"
