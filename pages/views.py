@@ -128,7 +128,6 @@ def stats(request):
     i = list(request.GET.dict().keys())[0]
     movies = back.recieve_movies(i)
     list_movies = [movie for movie in back.movies.values()]
-    print(back.movies.keys())
     table = pd.DataFrame(pd.concat(list_movies, axis=1))
     return HttpResponse(table.to_html())
 
