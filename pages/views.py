@@ -105,7 +105,7 @@ def new_movie(request):
     return JsonResponse(json)
 
 def create_room(request):
-    user_id = str(request.META.get("CSRF_COOKIE"))
+    user_id = str(request.META.get("CSRF_COOKIE"))[:6]
     #assign random room_id, if create button
     if "create" in request.POST.keys():
         room_id = str(np.random.randint(100))
@@ -125,11 +125,16 @@ def home(request):
     return render(request, "home.html")
 
 def stats(request):
-    i = list(request.GET.dict().keys())[0]
+    i = request.GET["r"]
+    user = request.GET["u"]
     movies = back.recieve_movies(i)
     list_movies = [movie for movie in back.movies.values()]
+    list_movies_idx = [movie for movie in back.movies.keys()]
     table = pd.DataFrame(pd.concat(list_movies, axis=1))
-    return HttpResponse(table.to_html())
+    table.columns = list_movies_idx
+    table.index = table.index.astype(int)
+    table = pd.merge(table, back.all_movies[back.all_movies.columns[3:]], left_index=True, right_index=True)
+    return HttpResponse(table.sort_values(user, ascending=False).to_html())
 
 def sim(request):
     a = pd.DataFrame(back.sim, columns=["sum"])
