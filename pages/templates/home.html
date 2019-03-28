@@ -17,7 +17,7 @@
 
 Create a Room, where friends can join...
 <br>
-<form action="/room/"  method=POST>{% csrf_token %} 
+<form action="/create_room/"  method=POST>{% csrf_token %} 
 <button class="button" name="create" type="submit">Create Room</button>
 </form> 
 <br>
@@ -32,6 +32,5 @@ Create a Room, where friends can join...
 </form> 
 and find the perfect match
 
-{{table}}
 <br>
 <h3><a href="/stats/">Stats</a></h3>

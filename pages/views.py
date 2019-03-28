@@ -105,9 +105,16 @@ def new_movie(request):
     return JsonResponse(json)
 
 def create_room(request):
+    def movie(i):
+        return back.all_movies.loc[i].to_dict()
+    return render(request, "create.html", {"genres": ["genre1", "genre2"], "movies": [movie(111161), movie(840361)]})
+
+
+def room(request):
     user_id = str(request.META.get("CSRF_COOKIE"))[:6]
     #assign random room_id, if create button
     if "create" in request.POST.keys():
+        choices = request.POST["choices"]
         room_id = str(np.random.randint(100))
     elif "join" in request.POST.keys():
         room_id = request.POST["join"]
@@ -118,7 +125,7 @@ def create_room(request):
     json = back.all_movies.loc[const].to_dict()
     json["year"] = str(json["year"])
     json["const"] = str(const)
-    return render(request, "session.html", {"room_id": room_id, "user_id":user_id, "json":(js.dumps(json))})
+    return render(request, "room.html", {"room_id": room_id, "user_id":user_id, "json":(js.dumps(json))})
 
 ### Static pages ###
 def home(request):

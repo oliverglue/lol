@@ -1,0 +1,32 @@
+<style>
+.button {
+  background-color: DeepSkyBlue;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+{{genres}}
+
+{{movies}}
+<br>
+<form action="/room/"  method=POST>{% csrf_token %} 
+<h3>Pick a few movies, you like, to improve the movie recommendations..</h3>
+<br>
+<br>
+<h3>In the mood for some specific genres..</h3>
+
+
+<input type="text" name="choices" value="XXX">
+<input class="button" name="create" type="submit"></input>
+</form> 
+
