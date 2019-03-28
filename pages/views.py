@@ -5,133 +5,105 @@ import numpy as np
 import pandas as pd
 import os 
 import time
+from .models import Database
+import json as js
+
 
 class backend():
-    """
-    Attributes:
-        rooms : dict[room_id:pd.DataFrame]
-            all active rooms as keys and pandas dataframe as value
-            columns: users, rows: movies
-            e.g. users of a room is room[room_id].columns
-
-        user : dict[user_id:room_id]
-            keep track of users and rooms
-
-        all_movies : pd.DataFrame(columns=title etc, rows=movies)
-
-        all_movies : pd.DataFrame(columns=movies, rows=movies)
-            e.g. movie i and j have a similarity value at [i,j]
-
-    Methods:
-        create_room(user_id):
-            create pd.DataFrame in rooms with a random key(room_id)
-            i.e. 1 column as the first user with user_id
-
-        join_room(user_id, room_id):
-            join a room with the given key if room_id exist 
-            and user_id not in columns, append column as new user
-
-        add_movie(user_id):
-            add movie to row in rooms[room_id] for user_id
-
-        new_movie(user_id):
-            return new movie for user_id:
-            (1) if another user liked a movie
-            (2) else return content-based recommendation
-
-        recommend_movie(user_id):
-            content-based recommended movie to user_id 
-            by looking at the history:
-            ###TODO, improve###
-            (sum of similarities for liked movies) - 
-            (sum of similarities for disliked movies)
-            
-            
-    """
-    
     def __init__(self):
-        self.rooms = {}
-        self.users = {}
-        self.all_movies = pd.read_csv("scrap_imdb_0_3000.csv")
-        self.all_movies["plot"] = self.all_movies["plot"].apply(lambda x: eval(x)[0].split("::")[0])
-        self.all_movies["cast"] = self.all_movies["cast"].apply(lambda x: eval(x)[:4])
+        self.all_movies = pd.read_csv("top_movies_new.csv")
         self.all_movies.set_index("const", inplace=True)
         self.similarity_matrix = pd.read_pickle("similarity_matrix")
-        
-    def create_room(self, user_id, room_id):
-        self.rooms[room_id] = pd.DataFrame(columns=[user_id])
-        self.users[user_id] = room_id
-    
-    def join_room(self, user_id, room_id):
-        self.rooms[room_id] = self.rooms[room_id].assign(**{user_id:0})
-        self.users[user_id] = room_id
 
-    def add_movie(self, user_id, movie, like):
-        room_id = self.users[user_id]
-        users = self.rooms[room_id].keys()
-        if movie in self.rooms[room_id].index:
-            self.rooms[room_id].loc[movie,user_id] = like
-        else:
-            self.rooms[room_id].loc[movie] = [int(user_id == user)*like for user in users]
-    
-    def new_movie(self, user_id):
-        room_id = self.users[user_id]
-        movies = self.rooms[room_id][user_id]
-        liked_movies = movies[movies == 0]
-        if liked_movies.sum() != 0:
-            return np.random.choice(liked_movies)
-        else:
-            return self.recommend_movie(user_id)
-            
-    def recommend_movie(self, user_id):
-        room_id = self.users[user_id]
-        movies = self.rooms[room_id][user_id]        
-        
-        self.liked_movies = movies[movies > 0].index.values
-        self.disliked_movies = movies[movies < 0].index.values
-        
-        self.seen_movies = movies.index.values
-        
-        self.liked_sim = self.similarity_matrix.loc[self.liked_movies].sum().drop(self.seen_movies)
-        self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].sum().drop(self.seen_movies)
-        
-        self.sim = self.liked_sim - 0.3*self.disliked_sim
-        return self.sim.sort_values(ascending=False).index.values
+        ##rooms are sqlite database with 
+        ##(room_id, user_id, movies) as entries
 
+    def recieve_movies(self, user_id, room_id):
+        self.movies = {}
+        #iterate over users in room_id, value is dict of (room_id, user_id, movies)
+        for user in Database.objects.filter(room_id=room_id).values():
+            self.movies[user["user_id"]] = pd.Series(eval(user["movies"]))
+
+        #return dict with (keys,values) = (user, movies)
+
+    def add_movie(self, user_id, room_id, movie_id, like):
+        movies = Database.objects.filter(user_id=user_id, room_id=room_id).values()
+        #check if user has seen any movies
+        if movies.exists():
+            #recieve movies in json string
+            json_str = Database.objects.filter(user_id=user_id, room_id=room_id).values("movies")[0]["movies"]
+           
+            #convert json string to pd.series
+            movies = pd.Series(eval(json_str))
+            #add movie to pd.series
+            movies[movie_id] = like
+        else:
+            movies = pd.Series(like, index=[movie_id])
+        #send movies encoded as json 
+        Database(user_id=user_id, room_id=room_id, movies=movies.to_json()).save()
+
+    def new_movie(self, user_id, room_id):
+        """
+        1. if movie liked by other user, pick one of those
+        2. else recommend a movie based on previous content 
+        """
+        if Database.objects.filter(room_id=room_id).exists():
+            #recieve_movies
+            self.recieve_movies(user_id, room_id)
+
+            #check if liked by other users
+            user_1 = self.movies.pop(user_id)
+            #add other series to user_1, broadcast index and fill with 0 for user_1.
+            #filter by union of isna() values
+            for other_user in self.movies.keys():
+                movie = self.movies[other_user]
+                user_1 = user_1.add(movie, fill_value=0)[(user_1 + movie).isna()]
+            if len(user_1) != 0:
+                return np.random.choice(self.all_movies.index.values)#np.random.choice(user_1.index)
+
+        return recommend_movie(user_id, room_id)
+
+    def recommend_movie(self, user_id, room_id):
+        return np.random.choice(self.all_movies.index.values)
 
 
 back = backend()
+
 def new_movie(request):
-    t1 = time.time()
-
-    liked_movie = int(request.GET["movie_id"])
-    print(liked_movie)
-    like = int(request.GET["like"])
-    user_id = request.GET["user_id"]
-    back.add_movie(user_id, liked_movie, like)
-
-    i = back.new_movie(user_id)[0]
-    json = back.all_movies.loc[i].to_dict()
-    del json["Unnamed: 0"]
-    json["const"] = str(back.all_movies.loc[i].name)
+    """
+    1. User GET-request with dict of (keys) = (user_id, room_id, movie_id, like)
+    2. Add movie liked with add_movie()
+    3. Recommend a new movie with new_movie()
+    4. Return jsonResponse with all_movies[new_movie()]
+    """
+    tmp = {}    #iterate over (key, values) in the get-request
+    for key in ["user_id", "room_id", "movie_id", "like"]:
+        tmp[key] = request.GET[key]
+    #add movie to db
+    back.add_movie(tmp["user_id"], tmp["room_id"], tmp["movie_id"], tmp["like"])
+    #recommend new movie
+    i =  back.new_movie(tmp["user_id"], tmp["room_id"])
+    #get info about movie as json
+    json = back.all_movies.loc[int(i)].to_dict()
+    json["const"] = str(i)
     json["year"] = str(json["year"])
-    json["genres"] = str(", ".join(eval(json["genres"])[:3]))
-    json["cast"] = str(", ".join(json["cast"][:4]))
-    print(time.time() - t1)
     return JsonResponse(json)
 
 def create_room(request):
-    user_id = str(request.META.get('CSRF_COOKIE'))
-    if  "create" in request.POST.keys():
+    user_id = str(request.META.get("CSRF_COOKIE"))
+    #assign random room_id, if create button
+    if "create" in request.POST.keys():
         room_id = str(np.random.randint(100))
-        back.create_room(user_id, room_id)
     elif "join" in request.POST.keys():
         room_id = request.POST["join"]
-        if room_id in back.rooms.keys():
-            back.join_room(user_id, room_id)
-        else:
+        #check if room_id does not exist
+        if Database.objects.filter(room_id=room_id).exists() == False:
             return JsonResponse({"room_exists":False})#render(request, "home.html")
-    return render(request, "session.html", {"room_id": room_id, "user_id":user_id})
+    const = np.random.choice(back.all_movies.index.values)
+    json = back.all_movies.loc[const].to_dict()
+    json["year"] = str(json["year"])
+    json["const"] = str(const)
+    return render(request, "session.html", {"room_id": room_id, "user_id":user_id, "json":(js.dumps(json))})
 
 ### Static pages ###
 def home(request):

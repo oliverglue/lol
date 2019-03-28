@@ -135,10 +135,10 @@
                     <div class="col-sm plotBackground castStyle">
                         <div class="row">
                             <div class="col-sm">
-                                <h6>Cast:</h6><span  id="cast">Actors: Christian Bale, Heath Ledger, Aaron Eckhart</span>
+                                <h6>Cast:</h6><span id="cast">Actors: Christian Bale, Heath Ledger, Aaron Eckhart</span>
                             </div>
                         </div>
-                        
+
                     </div>
 
                 </div>
@@ -167,24 +167,33 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
 <script>
-
     var user_id = "{{user_id}}";
-    var foo = {"const":468569};
+    var foo = {{json | safe}}
+    ;
+    console.log(foo)
+    buildPage();
+    
+    var infoReturned = true;
     $(document).ready(function() {
         $(".choiceButton").click(function() {
-            $.get({
-                url: "/session/new_movie",
-                data: {
-                    like: $(this).val(),
-                    user_id: user_id, 
-                    movie_id: foo.const,
-                },
-                success: function(i) {
-                    foo = i;
-                    console.log(foo, user_id)
-                    buildPage();
-                }
-            });
+            if (infoReturned) {
+                infoReturned =false;
+                $.get({
+                    url: "/session/new_movie",
+                    data: {
+                        like: $(this).val(),
+                        user_id: user_id,
+                        movie_id: foo.const,
+                        room_id: "{{room_id}}",
+                    },
+                    success: function(i) {
+                        foo = i;
+                        console.log(foo, user_id)
+                        buildPage();
+                        infoReturned = true;
+                    }
+                });
+            }
         });
 
         $("#leaveRoom").click(function() {
