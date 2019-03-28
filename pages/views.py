@@ -18,29 +18,30 @@ class backend():
         ##rooms are sqlite database with 
         ##(room_id, user_id, movies) as entries
 
-    def recieve_movies(self, user_id, room_id):
+    def recieve_movies(self, room_id):
         self.movies = {}
         #iterate over users in room_id, value is dict of (room_id, user_id, movies)
         for user in Database.objects.filter(room_id=room_id).values():
-            self.movies[user["user_id"]] = pd.Series(eval(user["movies"]))
+            self.movies[user["user_id"]] = pd.Series(eval(user["movies"]), dtype=int)
 
         #return dict with (keys,values) = (user, movies)
 
     def add_movie(self, user_id, room_id, movie_id, like):
-        movies = Database.objects.filter(user_id=user_id, room_id=room_id).values()
+        movie = Database.objects.filter(user_id=user_id, room_id=room_id)
         #check if user has seen any movies
-        if movies.exists():
+        if movie.exists():
             #recieve movies in json string
             json_str = Database.objects.filter(user_id=user_id, room_id=room_id).values("movies")[0]["movies"]
-           
+            
             #convert json string to pd.series
             movies = pd.Series(eval(json_str))
             #add movie to pd.series
-            movies[movie_id] = like
+            movies[movie_id] = int(like)
+            Database(id=movie[0].id, user_id=user_id, room_id=room_id, movies=movies.to_json()).save(force_update=True)
         else:
-            movies = pd.Series(like, index=[movie_id])
-        #send movies encoded as json 
-        Database(user_id=user_id, room_id=room_id, movies=movies.to_json()).save()
+            movies = pd.Series(int(like), index=[movie_id])
+            #send movies encoded as json 
+            Database(user_id=user_id, room_id=room_id, movies=movies.to_json()).save(force_insert=True)
 
     def new_movie(self, user_id, room_id):
         """
@@ -49,23 +50,37 @@ class backend():
         """
         if Database.objects.filter(room_id=room_id).exists():
             #recieve_movies
-            self.recieve_movies(user_id, room_id)
+            self.recieve_movies(room_id)
+            if len(self.movies.keys()) > 1:
+                #check if liked by other users
+                user_1 = self.movies.pop(user_id)
+                #add other series to user_1, broadcast index and fill with 0 for user_1.
+                #filter by union of isna() values
+                df = pd.DataFrame(pd.concat([x for x in self.movies.values()]))
+                df["user_1"] = user_1
+                if np.sum(df["user_1"].isna()) != 0:
+                    likes = np.sum(df[df["user_1"].isna()], axis=1)
+                    if np.sum([likes > 0]) > 0:
+                        return np.random.choice(df[df["user_1"].isna()][likes > 0].index.values)
 
-            #check if liked by other users
-            user_1 = self.movies.pop(user_id)
-            #add other series to user_1, broadcast index and fill with 0 for user_1.
-            #filter by union of isna() values
-            for other_user in self.movies.keys():
-                movie = self.movies[other_user]
-                user_1 = user_1.add(movie, fill_value=0)[(user_1 + movie).isna()]
-            if len(user_1) != 0:
-                return np.random.choice(self.all_movies.index.values)#np.random.choice(user_1.index)
-
-        return recommend_movie(user_id, room_id)
+        return self.recommend_movie(user_id, room_id)
 
     def recommend_movie(self, user_id, room_id):
-        return np.random.choice(self.all_movies.index.values)
+        json_str = Database.objects.filter(user_id=user_id, room_id=room_id).values("movies")[0]["movies"]
+           
+        #convert json string to pd.series
+        movies = pd.Series(eval(json_str), dtype=int)
 
+        self.liked_movies = movies[movies > 0].index.astype(int).values
+        self.disliked_movies = movies[movies < 0].index.astype(int).values
+        
+        self.seen_movies = movies.index.astype(int).values
+        
+        self.liked_sim = self.similarity_matrix.loc[self.liked_movies].sum().drop(self.seen_movies)
+        self.disliked_sim = self.similarity_matrix.loc[self.disliked_movies].sum().drop(self.seen_movies)
+        
+        self.sim = self.liked_sim - 0.3*self.disliked_sim
+        return int(self.sim.sort_values(ascending=False).index.values[0])
 
 back = backend()
 
@@ -111,7 +126,11 @@ def home(request):
 
 def stats(request):
     i = list(request.GET.dict().keys())[0]
-    return HttpResponse(back.rooms[str(i)].to_html())
+    movies = back.recieve_movies(i)
+    list_movies = [movie for movie in back.movies.values()]
+    print(back.movies.keys())
+    table = pd.DataFrame(pd.concat(list_movies, axis=1))
+    return HttpResponse(table.to_html())
 
 def sim(request):
     a = pd.DataFrame(back.sim, columns=["sum"])
